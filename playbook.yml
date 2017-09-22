@@ -1,0 +1,10 @@
+---
+- hosts: web
+  vars_files:
+    - vars.yml
+  roles:
+    - { role: droplet.preinstall, become: yes }
+    - { role: geerlingguy.php, become: yes }
+    - { role: geerlingguy.mysql, become: yes }
+    - { role: geerlingguy.apache, become: yes }
+    - { role: droplet.postinstall, become: yes }

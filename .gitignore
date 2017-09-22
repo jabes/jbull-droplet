@@ -1,0 +1,6 @@
+**/.*
+!.gitignore
+
+roles/*
+!roles/droplet.preinstall
+!roles/droplet.postinstall

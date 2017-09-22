@@ -1,0 +1,9 @@
+- name: Install PHP apt repository
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+
+- name: Upgrade packages
+  apt:
+    upgrade: full
+    autoremove: yes
