@@ -23,7 +23,7 @@
         update_cache: yes
         state: latest
       with_items:
-        - nodejs
+        - npm
         - apache2
         - libapache2-mod-php5.6
         - php5.6-common
