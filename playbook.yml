@@ -117,11 +117,18 @@
         - schema
         - seed
 
-    - name: Install knackcommerce.com bower packages
-      bower:
-        path: /var/www/knackcommerce.com
-        state: latest
+    - name: Install Bower
+      npm:
+        name: bower
+        state: present
+        global: yes
       become: no
+
+    - name: Install knackcommerce.com bower packages
+      command: bower install
+      become: no
+      args:
+        chdir: /var/www/knackcommerce.com
 
   handlers:
     - name: restart apache
