@@ -23,6 +23,7 @@
         update_cache: yes
         state: latest
       with_items:
+        - nodejs
         - npm
         - apache2
         - libapache2-mod-php5.6
@@ -116,6 +117,14 @@
       with_items:
         - schema
         - seed
+
+    - name: Symlink Node binary
+      file:
+        src: /usr/bin/nodejs
+        dest: /usr/bin/node
+        owner: root
+        group: root
+        state: link
 
     - name: Install Bower
       npm:
