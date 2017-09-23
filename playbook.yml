@@ -31,6 +31,7 @@
         - php5.6-json
         - php5.6-mysql
         - mysql-server
+        - python2.7-mysqldb
 
     - name: Clone jbull.ca
       git:
@@ -61,7 +62,6 @@
         server_name: jbull.ca
         server_alias: www.jbull.ca
         document_root: /var/www/jbull.ca
-      notify: restart apache
 
     - name: Add pinup.jbull.ca vhosts configuration
       template:
@@ -73,7 +73,6 @@
       vars:
         server_name: pinup.jbull.ca
         document_root: /var/www/pinup.jbull.ca
-      notify: restart apache
 
     - name: Add knackcommerce.com vhosts configuration
       template:
@@ -86,6 +85,17 @@
         server_name: knackcommerce.com
         server_alias: www.knackcommerce.com
         document_root: /var/www/knackcommerce.com
+
+    - name: Enable jbull.ca vhost
+      command: a2ensite jbull.ca.conf
+      notify: restart apache
+
+    - name: Enable pinup.jbull.ca vhost
+      command: a2ensite pinup.jbull.ca.conf
+      notify: restart apache
+
+    - name: Enable knackcommerce.com vhost
+      command: a2ensite knackcommerce.com.conf
       notify: restart apache
 
     - name: Create pinup database
