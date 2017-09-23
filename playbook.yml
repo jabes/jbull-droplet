@@ -1,10 +1,109 @@
 ---
 - hosts: web
-  vars_files:
-    - vars.yml
-  roles:
-    - { role: droplet.preinstall, become: yes }
-    - { role: geerlingguy.php, become: yes }
-    - { role: geerlingguy.mysql, become: yes }
-    - { role: geerlingguy.apache, become: yes }
-    - { role: droplet.postinstall, become: yes }
+
+  become: yes
+  become_user: root
+
+  tasks:
+
+    - name: Install php repository
+      apt_repository:
+        repo: 'ppa:ondrej/php'
+        state: present
+
+    - name: Remove existing php packages
+      apt:
+        name: php*
+        state: absent
+        purge: true
+
+    - name: Install packages
+      apt:
+        name: '{{ item }}'
+        update_cache: yes
+        state: latest
+      with_items:
+        - apache2
+        - libapache2-mod-php5.6
+        - php5.6-common
+        - php5.6-cli
+        - php5.6-curl
+        - php5.6-json
+        - php5.6-mysql
+        - mysql-server
+
+    - name: Clone jbull.ca
+      git:
+        clone: yes
+        repo: https://github.com/jabes/website-2012
+        dest: /var/www/jbull.ca
+
+    - name: Clone pinup.jbull.ca
+      git:
+        clone: yes
+        repo: https://github.com/jabes/pinup
+        dest: /var/www/pinup.jbull.ca
+
+    - name: Clone knackcommerce.com
+      git:
+        clone: yes
+        repo: https://github.com/jabes/knack-commerce
+        dest: /var/www/knackcommerce.com
+
+    - name: Add jbull.ca vhosts configuration
+      template:
+        src: vhosts.conf.j2
+        dest: "/etc/apache2/sites-available/"
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        server_name: jbull.ca
+        server_alias: www.jbull.ca
+        document_root: /var/www/jbull.ca
+      notify: restart apache
+
+    - name: Add pinup.jbull.ca vhosts configuration
+      template:
+        src: vhosts.conf.j2
+        dest: "/etc/apache2/sites-available/"
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        server_name: pinup.jbull.ca
+        document_root: /var/www/pinup.jbull.ca
+      notify: restart apache
+
+    - name: Add knackcommerce.com vhosts configuration
+      template:
+        src: vhosts.conf.j2
+        dest: "/etc/apache2/sites-available/"
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        server_name: knackcommerce.com
+        server_alias: www.knackcommerce.com
+        document_root: /var/www/knackcommerce.com
+      notify: restart apache
+
+    - name: Create pinup database
+      mysql_db:
+        name: pinup
+        state: present
+
+    - name: Import pinup .sql files
+      mysql_db:
+        name: pinup
+        state: import
+        target: /var/www/pinup.jbull.ca/sql/{{ item.name }}.sql
+      with_items:
+        - schema
+        - seed
+
+  handlers:
+    - name: restart apache
+      service:
+        name: apache2
+        state: restarted
