@@ -23,7 +23,6 @@
         update_cache: yes
         state: latest
       with_items:
-        - bower
         - apache2
         - libapache2-mod-php5.6
         - php5.6-common
@@ -118,9 +117,9 @@
         - seed
 
     - name: Install knackcommerce.com bower packages
-      command: bower install
-      args:
-        chdir: /var/www/knackcommerce.com
+      bower:
+        path: /var/www/knackcommerce.com
+        state: latest
 
   handlers:
     - name: restart apache
