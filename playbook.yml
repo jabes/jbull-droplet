@@ -1,5 +1,5 @@
 ---
-- hosts: jbull.ca
+- hosts: all
 
   become: yes
   become_user: root
