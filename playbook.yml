@@ -54,7 +54,7 @@
     - name: Add jbull.ca vhosts configuration
       template:
         src: vhosts.conf.j2
-        dest: "/etc/apache2/sites-available/"
+        dest: "/etc/apache2/sites-available/jbull.ca.conf"
         owner: root
         group: root
         mode: 0644
@@ -66,7 +66,7 @@
     - name: Add pinup.jbull.ca vhosts configuration
       template:
         src: vhosts.conf.j2
-        dest: "/etc/apache2/sites-available/"
+        dest: "/etc/apache2/sites-available/pinup.jbull.ca.conf"
         owner: root
         group: root
         mode: 0644
@@ -77,7 +77,7 @@
     - name: Add knackcommerce.com vhosts configuration
       template:
         src: vhosts.conf.j2
-        dest: "/etc/apache2/sites-available/"
+        dest: "/etc/apache2/sites-available/knackcommerce.com.conf"
         owner: root
         group: root
         mode: 0644
@@ -85,6 +85,10 @@
         server_name: knackcommerce.com
         server_alias: www.knackcommerce.com
         document_root: /var/www/knackcommerce.com
+
+    - name: Disable default vhost
+      command: a2dissite 000-default.conf
+      notify: restart apache
 
     - name: Enable jbull.ca vhost
       command: a2ensite jbull.ca.conf
