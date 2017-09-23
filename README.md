@@ -1,8 +1,8 @@
-# Droplet Provisioning
+# Droplet Setup
 
-Server: http://www.jbull.ca
+This [Ansible](https://www.ansible.com) playbook provisions the [jbull.ca](http://www.jbull.ca) server.
 
-### Install
+### How To Use
 
 ```bash
 sudo apt-get install -y ansible
