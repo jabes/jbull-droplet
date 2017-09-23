@@ -121,6 +121,7 @@
       bower:
         path: /var/www/knackcommerce.com
         state: latest
+      become: no
 
   handlers:
     - name: restart apache
