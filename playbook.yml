@@ -131,11 +131,9 @@
         name: bower
         state: present
         global: yes
-      become: no
 
     - name: Install knackcommerce.com bower packages
-      command: bower install
-      become: no
+      command: bower install --allow-root
       args:
         chdir: /var/www/knackcommerce.com
 
