@@ -17,7 +17,7 @@
         state: absent
         purge: true
 
-    - name: Install packages
+    - name: Install apt packages
       apt:
         name: '{{ item }}'
         update_cache: yes
@@ -35,6 +35,20 @@
         - mysql-server
         - python2.7-mysqldb
 
+    - name: Symlink Node binary
+      file:
+        src: /usr/bin/nodejs
+        dest: /usr/bin/node
+        owner: root
+        group: root
+        state: link
+
+    - name: Install global Bower package
+      npm:
+        name: bower
+        state: present
+        global: yes
+
     - name: Clone jbull.ca
       git:
         clone: yes
@@ -46,12 +60,6 @@
         clone: yes
         repo: https://github.com/jabes/pinup
         dest: /var/www/pinup.jbull.ca
-
-    - name: Clone knackcommerce.com
-      git:
-        clone: yes
-        repo: https://github.com/jabes/knack-commerce
-        dest: /var/www/knackcommerce.com
 
     - name: Add jbull.ca vhosts configuration
       template:
@@ -76,18 +84,6 @@
         server_name: pinup.jbull.ca
         document_root: /var/www/pinup.jbull.ca
 
-    - name: Add knackcommerce.com vhosts configuration
-      template:
-        src: vhosts.conf.j2
-        dest: /etc/apache2/sites-available/knackcommerce.com.conf
-        owner: root
-        group: root
-        mode: 0644
-      vars:
-        server_name: knackcommerce.com
-        server_alias: www.knackcommerce.com
-        document_root: /var/www/knackcommerce.com
-
     - name: Disable default vhost
       command: a2dissite 000-default.conf
       notify: restart apache
@@ -98,10 +94,6 @@
 
     - name: Enable pinup.jbull.ca vhost
       command: a2ensite pinup.jbull.ca.conf
-      notify: restart apache
-
-    - name: Enable knackcommerce.com vhost
-      command: a2ensite knackcommerce.com.conf
       notify: restart apache
 
     - name: Create pinup database
@@ -117,25 +109,6 @@
       with_items:
         - schema
         - seed
-
-    - name: Symlink Node binary
-      file:
-        src: /usr/bin/nodejs
-        dest: /usr/bin/node
-        owner: root
-        group: root
-        state: link
-
-    - name: Install Bower
-      npm:
-        name: bower
-        state: present
-        global: yes
-
-    - name: Install knackcommerce.com bower packages
-      command: bower install --allow-root
-      args:
-        chdir: /var/www/knackcommerce.com
 
   handlers:
     - name: restart apache
