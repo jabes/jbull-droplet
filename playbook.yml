@@ -34,8 +34,8 @@
         - php5.6-mysql
         - mysql-server
 
-    - name: Enable php5 modules
-      shell: 'php5enmod {{ item }}'
+    - name: Enable php modules
+      shell: 'phpenmod {{ item }}'
       with_items:
         - mcrypt
         - memcache
