@@ -53,18 +53,21 @@
         clone: yes
         repo: https://github.com/jabes/website-2012
         dest: /var/www/jbull.ca
+        force: yes
 
     - name: Clone pinup.jbull.ca
       git:
         clone: yes
         repo: https://github.com/jabes/pinup
         dest: /var/www/pinup.jbull.ca
+        force: yes
 
     - name: Clone reports.jbull.ca
       git:
         clone: yes
         repo: https://github.com/jabes/pinup-reports
         dest: /var/www/reports.jbull.ca
+        force: yes
 
     - name: Remove all apache sites
       file:
