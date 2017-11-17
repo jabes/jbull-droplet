@@ -130,10 +130,9 @@
 
     - name: Replace localhost domains with production domains for pinup
       replace:
-        path: '{{ item }}'
+        dest: '{{ item }}'
         regexp: '(\s+)pinup\.dev(\s+.*)?$'
         replace: '\1pinup.jbull.ca\2'
-        backup: yes
       with_items:
         - /var/www/pinup.jbull.ca/build/js/prefs.js
         - /var/www/pinup.jbull.ca/cdn/frontend-js/pinup.js
