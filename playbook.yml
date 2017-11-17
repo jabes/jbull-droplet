@@ -33,6 +33,7 @@
         - php5.6-memcache
         - php5.6-mysql
         - mysql-server
+        - python-mysqldb # used by ansible mysql_db module
 
     - name: Enable php modules
       shell: 'phpenmod {{ item }}'
@@ -122,13 +123,6 @@
     - name: Enable reports.jbull.ca vhost
       command: a2ensite reports.jbull.ca.conf
       notify: restart apache
-
-    - name: Set permissions for root mysql user
-      mysql_user:
-        name: root
-        password: root
-        priv: '*.*:ALL'
-        state: present
 
     - name: Replace localhost domains with production domains for pinup
       replace:
