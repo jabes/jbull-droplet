@@ -109,10 +109,6 @@
         server_name: reports.jbull.ca
         document_root: /var/www/reports.jbull.ca
 
-    - name: Disable default vhost
-      command: a2dissite 000-default.conf
-      notify: restart apache
-
     - name: Enable jbull.ca vhost
       command: a2ensite jbull.ca.conf
       notify: restart apache
