@@ -121,6 +121,13 @@
       command: a2ensite reports.jbull.ca.conf
       notify: restart apache
 
+    - name: Set permissions for root mysql user
+      mysql_user:
+        name: root
+        password: root
+        priv: '*.*:ALL'
+        state: present
+
     - name: Create pinup database
       mysql_db:
         name: pinup
