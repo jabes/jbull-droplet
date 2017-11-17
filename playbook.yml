@@ -61,6 +61,20 @@
         repo: https://github.com/jabes/pinup
         dest: /var/www/pinup.jbull.ca
 
+    - name: Clone reports.jbull.ca
+      git:
+        clone: yes
+        repo: https://github.com/jabes/pinup-reports
+        dest: /var/www/reports.jbull.ca
+
+    - name: Remove all apache sites
+      file:
+        state: absent
+        path: '{{ item }}'
+      with_items:
+        - /etc/apache2/sites-available/*
+        - /etc/apache2/sites-enabled/*
+
     - name: Add jbull.ca vhosts configuration
       template:
         src: vhosts.conf.j2
@@ -84,6 +98,17 @@
         server_name: pinup.jbull.ca
         document_root: /var/www/pinup.jbull.ca
 
+    - name: Add reports.jbull.ca vhosts configuration
+      template:
+        src: vhosts.conf.j2
+        dest: /etc/apache2/sites-available/reports.jbull.ca.conf
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        server_name: reports.jbull.ca
+        document_root: /var/www/reports.jbull.ca
+
     - name: Disable default vhost
       command: a2dissite 000-default.conf
       notify: restart apache
@@ -94,6 +119,10 @@
 
     - name: Enable pinup.jbull.ca vhost
       command: a2ensite pinup.jbull.ca.conf
+      notify: restart apache
+
+    - name: Enable reports.jbull.ca vhost
+      command: a2ensite reports.jbull.ca.conf
       notify: restart apache
 
     - name: Create pinup database
