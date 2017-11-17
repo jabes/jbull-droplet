@@ -128,6 +128,19 @@
         priv: '*.*:ALL'
         state: present
 
+    - name: Replace localhost domains with production domains for pinup
+      replace:
+        path: '{{ item }}'
+        regexp: '(\s+)pinup\.dev(\s+.*)?$'
+        replace: '\1pinup.jbull.ca\2'
+        backup: yes
+      with_items:
+        - /var/www/pinup.jbull.ca/build/js/prefs.js
+        - /var/www/pinup.jbull.ca/cdn/frontend-js/pinup.js
+        - /var/www/pinup.jbull.ca/cdn/frontend-js/pinup.min.js
+        - /var/www/pinup.jbull.ca/gateway/php/config.php
+        - /var/www/pinup.jbull.ca/sql/seed.sql
+
     - name: Create pinup database
       mysql_db:
         name: pinup
