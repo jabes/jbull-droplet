@@ -17,6 +17,12 @@
         state: absent
         purge: true
 
+    - name: Remove existing mysql packages
+      apt:
+        name: mysql*
+        state: absent
+        purge: true
+
     - name: Install apt packages
       apt:
         name: '{{ item }}'
@@ -136,14 +142,26 @@
         - /var/www/pinup.jbull.ca/gateway/php/config.php
         - /var/www/pinup.jbull.ca/sql/seed.sql
 
+    - name: Ensure MySQL root user is present
+      mysql_user:
+        host: 127.0.0.1
+        name: root
+        password: root
+        priv: '*.*:ALL,GRANT'
+        state: present
+
     - name: Create pinup database
       mysql_db:
         name: pinup
+        login_user: root
+        login_password: root
         state: present
 
     - name: Import pinup .sql files
       mysql_db:
         name: pinup
+        login_user: root
+        login_password: root
         state: import
         target: '/var/www/pinup.jbull.ca/sql/{{ item }}.sql'
       with_items:
