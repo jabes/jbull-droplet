@@ -23,31 +23,30 @@
         update_cache: yes
         state: latest
       with_items:
-        - nodejs
-        - npm
         - apache2
         - libapache2-mod-php5.6
         - php5.6-common
-        - php5.6-cli
         - php5.6-curl
         - php5.6-json
+        - php5.6-mbstring
+        - php5.6-mcrypt
+        - php5.6-memcache
         - php5.6-mysql
         - mysql-server
-        - python2.7-mysqldb
 
-    - name: Symlink Node binary
-      file:
-        src: /usr/bin/nodejs
-        dest: /usr/bin/node
-        owner: root
-        group: root
-        state: link
+    - name: Enable php5 modules
+      shell: 'php5enmod {{ item }}'
+      with_items:
+        - mcrypt
+        - memcache
 
-    - name: Install global Bower package
-      npm:
-        name: bower
+    - name: Enable apache modules
+      apache2_module:
+        name: '{{ item }}'
         state: present
-        global: yes
+      with_items:
+        - rewrite
+      notify: restart apache
 
     - name: Clone jbull.ca
       git:
