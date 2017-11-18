@@ -148,6 +148,8 @@
         name: root
         password: root
         priv: '*.*:ALL,GRANT'
+        login_user: root
+        login_password: root
         state: present
 
     - name: Create pinup database
