@@ -11,6 +11,11 @@
         repo: ppa:ondrej/php
         state: present
 
+    - name: Install mysql repository
+      apt_repository:
+        repo: ppa:ondrej/mysql-5.6
+        state: present
+
     - name: Remove existing php packages
       apt:
         name: php*
@@ -38,7 +43,7 @@
         - php5.6-mcrypt
         - php5.6-memcache
         - php5.6-mysql
-        - mysql-server-5.7
+        - mysql-server-5.6
         - python-mysqldb # used by ansible mysql_db module
 
     - name: Enable php modules
