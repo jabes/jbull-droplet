@@ -38,7 +38,7 @@
         - php5.6-mcrypt
         - php5.6-memcache
         - php5.6-mysql
-        - mysql-server
+        - mysql-server-5.7
         - python-mysqldb # used by ansible mysql_db module
 
     - name: Enable php modules
