@@ -6,27 +6,24 @@
 
   tasks:
 
-    - name: Install php repository
-      apt_repository:
-        repo: ppa:ondrej/php
-        state: present
-
-    - name: Install mysql repository
-      apt_repository:
-        repo: ppa:ondrej/mysql-5.6
-        state: present
-
-    - name: Remove existing php packages
+    - name: Purge existing packages that will soon be replaced
       apt:
-        name: php*
+        name: '{{ item }}'
         state: absent
         purge: true
+      with_items:
+        - php*
+        - mysql*
 
-    - name: Remove existing mysql packages
-      apt:
-        name: mysql*
-        state: absent
-        purge: true
+    - name: Set mysql debconf
+      debconf:
+        name: '{{ item.name }}'
+        question: '{{ item.question }}'
+        value: '{{ item.value }}'
+        vtype: '{{ item.type }}'
+      with_items:
+        - { name: mysql-server, question: mysql-server/root_password, type: password, value: root }
+        - { name: mysql-server, question: mysql-server/root_password_again, type: password, value: root }
 
     - name: Install apt packages
       apt:
@@ -35,19 +32,18 @@
         state: latest
       with_items:
         - apache2
-        - libapache2-mod-php5.6
-        - php5.6-common
-        - php5.6-curl
-        - php5.6-json
-        - php5.6-mbstring
-        - php5.6-mcrypt
-        - php5.6-memcache
-        - php5.6-mysql
-        - mysql-server-5.6
+        - libapache2-mod-php5
+        - php5-common
+        - php5-curl
+        - php5-json
+        - php5-mcrypt
+        - php5-memcache
+        - php5-mysql
+        - mysql-server
         - python-mysqldb # used by ansible mysql_db module
 
     - name: Enable php modules
-      shell: 'phpenmod {{ item }}'
+      shell: 'php5enmod {{ item }}'
       with_items:
         - mcrypt
         - memcache
@@ -60,82 +56,18 @@
         - rewrite
       notify: restart apache
 
-    - name: Clone jbull.ca
+    - name: Clone website repositories into their docroot folders
       git:
+        repo: '{{ item.repo }}'
+        dest: '{{ item.dest }}'
         clone: yes
-        repo: https://github.com/jabes/website-2012
-        dest: /var/www/jbull.ca
         force: yes
-
-    - name: Clone pinup.jbull.ca
-      git:
-        clone: yes
-        repo: https://github.com/jabes/pinup
-        dest: /var/www/pinup.jbull.ca
-        force: yes
-
-    - name: Clone reports.jbull.ca
-      git:
-        clone: yes
-        repo: https://github.com/jabes/pinup-reports
-        dest: /var/www/reports.jbull.ca
-        force: yes
-
-    - name: Remove all apache sites
-      file:
-        state: absent
-        path: '{{ item }}'
       with_items:
-        - /etc/apache2/sites-available/*
-        - /etc/apache2/sites-enabled/*
+        - { repo: 'https://github.com/jabes/website-2012', dest: /var/www/jbull.ca }
+        - { repo: 'https://github.com/jabes/pinup', dest: /var/www/pinup.jbull.ca }
+        - { repo: 'https://github.com/jabes/pinup-reports', dest: /var/www/reports.jbull.ca }
 
-    - name: Add jbull.ca vhosts configuration
-      template:
-        src: vhosts.conf.j2
-        dest: /etc/apache2/sites-available/jbull.ca.conf
-        owner: root
-        group: root
-        mode: 0644
-      vars:
-        server_name: jbull.ca
-        server_alias: www.jbull.ca
-        document_root: /var/www/jbull.ca
-
-    - name: Add pinup.jbull.ca vhosts configuration
-      template:
-        src: vhosts.conf.j2
-        dest: /etc/apache2/sites-available/pinup.jbull.ca.conf
-        owner: root
-        group: root
-        mode: 0644
-      vars:
-        server_name: pinup.jbull.ca
-        document_root: /var/www/pinup.jbull.ca
-
-    - name: Add reports.jbull.ca vhosts configuration
-      template:
-        src: vhosts.conf.j2
-        dest: /etc/apache2/sites-available/reports.jbull.ca.conf
-        owner: root
-        group: root
-        mode: 0644
-      vars:
-        server_name: reports.jbull.ca
-        document_root: /var/www/reports.jbull.ca
-
-    - name: Enable jbull.ca vhost
-      command: a2ensite jbull.ca.conf
-      notify: restart apache
-
-    - name: Enable pinup.jbull.ca vhost
-      command: a2ensite pinup.jbull.ca.conf
-      notify: restart apache
-
-    - name: Enable reports.jbull.ca vhost
-      command: a2ensite reports.jbull.ca.conf
-      notify: restart apache
-
-    - name: Replace localhost domains with production domains for pinup
+    - name: Replace pinup localhost domains with production domains
       replace:
         dest: '{{ item }}'
         regexp: '^(.*)?pinup\.dev(.*)?$'
@@ -144,18 +76,53 @@
         - /var/www/pinup.jbull.ca/build/js/prefs.js
         - /var/www/pinup.jbull.ca/cdn/frontend-js/pinup.js
         - /var/www/pinup.jbull.ca/cdn/frontend-js/pinup.min.js
-        - /var/www/pinup.jbull.ca/gateway/php/config.php
         - /var/www/pinup.jbull.ca/sql/seed.sql
 
-    - name: Ensure MySQL root user is present
+    - name: Add vhost configurations
+      template:
+        src: vhosts.conf.j2
+        dest: '/etc/apache2/sites-available/{{ item.name }}.conf'
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        server_name: '{{ item.name }}'
+        server_alias: '{{ item.alias | default(false) }}'
+        document_root: '/var/www/{{ item.name }}'
+      with_items:
+        - { name: jbull.ca, alias: www.jbull.ca }
+        - { name: pinup.jbull.ca }
+        - { name: reports.jbull.ca }
+
+    - name: Disable default vhost
+      command: 'a2dissite {{ item }}.conf'
+      notify: restart apache
+      with_items:
+        - 000-default
+
+    - name: Enable vhosts
+      command: 'a2ensite {{ item }}.conf'
+      notify: restart apache
+      with_items:
+        - jbull.ca
+        - pinup.jbull.ca
+        - reports.jbull.ca
+
+    - name: Update MySQL root password for all root accounts
       mysql_user:
-        host: 127.0.0.1
+        host: '{{ item }}'
         name: root
         password: root
-        priv: '*.*:ALL,GRANT'
         login_user: root
         login_password: root
+        check_implicit_admin: yes
+        priv: "*.*:ALL,GRANT"
         state: present
+      with_items:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
 
     - name: Create pinup database
       mysql_db:
